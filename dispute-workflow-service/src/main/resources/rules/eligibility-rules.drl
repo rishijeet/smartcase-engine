@@ -1,0 +1,24 @@
+package com.smartcase.dispute.workflow.rules;
+
+import com.smartcase.dispute.classification.ClassifiedDispute;
+
+rule "High Value Fraud Dispute"
+    when
+        $d : ClassifiedDispute(category == "FRAUD", disputeRequest.amount > 1000)
+    then
+        $d.setEligibility("AUTO_APPROVE");
+end
+
+rule "Low Value Fraud Dispute"
+    when
+        $d : ClassifiedDispute(category == "FRAUD", disputeRequest.amount <= 1000)
+    then
+        $d.setEligibility("MANUAL_REVIEW");
+end
+
+rule "Non-Fraud Dispute"
+    when
+        $d : ClassifiedDispute(category != "FRAUD")
+    then
+        $d.setEligibility("REJECT");
+end 

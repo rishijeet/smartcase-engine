@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn2:definitions 
+    xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL"
+    xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+    xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+    xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+    xmlns:kie="http://www.jboss.org/drools/kie"
+    xmlns="http://www.jboss.org/drools"
+    targetNamespace="http://www.jboss.org/drools">
+
+    <bpmn2:process id="dispute-workflow" name="Dispute Processing Workflow" isExecutable="true">
+        
+        <!-- Start Event (Triggered by Kafka message) -->
+        <bpmn2:startEvent id="StartEvent_1" name="Dispute Received">
+            <bpmn2:messageEventDefinition messageRef="dispute.classified"/>
+        </bpmn2:startEvent>
+        
+        <!-- Business Rule Task for Eligibility Check -->
+        <bpmn2:businessRuleTask id="BusinessRuleTask_1" name="Check Eligibility" 
+                               implementation="http://www.jboss.org/drools/rule" 
+                               kie:ruleFlowGroup="eligibility-rules">
+            <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
+            <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
+        </bpmn2:businessRuleTask>
+        
+        <!-- Exclusive Gateway for Routing -->
+        <bpmn2:exclusiveGateway id="ExclusiveGateway_1" name="Route Dispute" gatewayDirection="Diverging">
+            <bpmn2:incoming>SequenceFlow_2</bpmn2:incoming>
+            <bpmn2:outgoing>SequenceFlow_3</bpmn2:outgoing>
+            <bpmn2:outgoing>SequenceFlow_4</bpmn2:outgoing>
+            <bpmn2:outgoing>SequenceFlow_5</bpmn2:outgoing>
+        </bpmn2:exclusiveGateway>
+        
+        <!-- Auto-Resolution Path -->
+        <bpmn2:serviceTask id="ServiceTask_1" name="Auto Resolution" implementation="##WebService" 
+                          operationRef="autoResolveDispute">
+            <bpmn2:incoming>SequenceFlow_3</bpmn2:incoming>
+            <bpmn2:outgoing>SequenceFlow_6</bpmn2:outgoing>
+        </bpmn2:serviceTask>
+        
+        <!-- Manual Review Path -->
+        <bpmn2:userTask id="UserTask_1" name="Manual Review" implementation="##unspecified">
+            <bpmn2:incoming>SequenceFlow_4</bpmn2:incoming>
+            <bpmn2:outgoing>SequenceFlow_7</bpmn2:outgoing>
+        </bpmn2:userTask>
+        
+        <!-- Rejection Path -->
+        <bpmn2:serviceTask id="ServiceTask_2" name="Send Rejection" implementation="##WebService" 
+                          operationRef="sendRejection">
+            <bpmn2:incoming>SequenceFlow_5</bpmn2:incoming>
+            <bpmn2:outgoing>SequenceFlow_8</bpmn2:outgoing>
+        </bpmn2:serviceTask>
+        
+        <!-- End Events -->
+        <bpmn2:endEvent id="EndEvent_1" name="Dispute Resolved">
+            <bpmn2:incoming>SequenceFlow_6</bpmn2:incoming>
+        </bpmn2:endEvent>
+        
+        <bpmn2:endEvent id="EndEvent_2" name="Dispute Rejected">
+            <bpmn2:incoming>SequenceFlow_8</bpmn2:incoming>
+        </bpmn2:endEvent>
+        
+        <!-- Sequence Flows -->
+        <bpmn2:sequenceFlow id="SequenceFlow_1" sourceRef="StartEvent_1" targetRef="BusinessRuleTask_1"/>
+        <bpmn2:sequenceFlow id="SequenceFlow_2" sourceRef="BusinessRuleTask_1" targetRef="ExclusiveGateway_1"/>
+        
+        <bpmn2:sequenceFlow id="SequenceFlow_3" sourceRef="ExclusiveGateway_1" targetRef="ServiceTask_1">
+            <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">
+                <![CDATA[return dispute.getEligibility() == "AUTO_APPROVE"]]>
+            </bpmn2:conditionExpression>
+        </bpmn2:sequenceFlow>
+        
+        <bpmn2:sequenceFlow id="SequenceFlow_4" sourceRef="ExclusiveGateway_1" targetRef="UserTask_1">
+            <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">
+                <![CDATA[return dispute.getEligibility() == "MANUAL_REVIEW"]]>
+            </bpmn2:conditionExpression>
+        </bpmn2:sequenceFlow>
+        
+        <bpmn2:sequenceFlow id="SequenceFlow_5" sourceRef="ExclusiveGateway_1" targetRef="ServiceTask_2">
+            <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">
+                <![CDATA[return dispute.getEligibility() == "REJECT"]]>
+            </bpmn2:conditionExpression>
+        </bpmn2:sequenceFlow>
+        
+        <bpmn2:sequenceFlow id="SequenceFlow_6" sourceRef="ServiceTask_1" targetRef="EndEvent_1"/>
+        <bpmn2:sequenceFlow id="SequenceFlow_7" sourceRef="UserTask_1" targetRef="EndEvent_1"/>
+        <bpmn2:sequenceFlow id="SequenceFlow_8" sourceRef="ServiceTask_2" targetRef="EndEvent_2"/>
+        
+    </bpmn2:process>
+    
+    <bpmn2:message id="dispute.classified" name="dispute.classified"/>
+    
+    <bpmndi:BPMNDiagram>
+        <!-- Diagram layout would be here in a real file -->
+    </bpmndi:BPMNDiagram>
+</bpmn2:definitions> 
