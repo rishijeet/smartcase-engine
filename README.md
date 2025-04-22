@@ -2,6 +2,9 @@
 
 A modular, event-driven dispute management application designed for processing and handling customer dispute cases with a clean, microservices-based architecture.
 
+<img width="1280" alt="Screenshot 2025-04-22 at 8 11 23 PM" src="https://github.com/user-attachments/assets/70d24120-c4f2-4c35-9809-46516cda99e6" />
+
+
 ## Author
 
 **Rishijeet** - Lead Developer
