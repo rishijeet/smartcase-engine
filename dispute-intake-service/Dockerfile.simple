@@ -2,8 +2,8 @@
 FROM eclipse-temurin:17-jdk-jammy
 WORKDIR /app
 
-# Copy the JAR file built outside of Docker
+# Copy the already built JAR file
 COPY target/dispute-intake-service-1.0.0.jar app.jar
 
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"] 

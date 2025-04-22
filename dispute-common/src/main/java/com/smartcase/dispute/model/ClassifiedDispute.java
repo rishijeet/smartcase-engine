@@ -1,9 +1,17 @@
 package com.smartcase.dispute.model;
 
-public class ClassifiedDispute {
+import java.io.Serializable;
+
+public class ClassifiedDispute implements Serializable {
+    private static final long serialVersionUID = 1L;
+    
     private DisputeRequest disputeRequest;
     private String category;
     private int priority;
+    
+    // Default constructor for deserialization
+    public ClassifiedDispute() {
+    }
 
     // Getters and Setters
     public DisputeRequest getDisputeRequest() {

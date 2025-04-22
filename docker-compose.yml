@@ -43,16 +43,13 @@ services:
       timeout: 10s
       retries: 3
 
-  # Common module (build only)
-  common:
-    build: ./dispute-common
-    image: smartcase/dispute-common:latest
-    volumes:
-      - maven-repo:/root/.m2
-
   # Microservices
   intake-service:
-    build: ./dispute-intake-service
+    image: eclipse-temurin:17-jre
+    volumes:
+      - ./dispute-intake-service/target/dispute-intake-service-1.0.0.jar:/app/app.jar
+    working_dir: /app
+    command: java -jar app.jar
     ports:
       - "8081:8080"
     environment:
@@ -63,7 +60,6 @@ services:
     depends_on:
       - postgres
       - kafka
-      - common
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 30s
@@ -71,14 +67,17 @@ services:
       retries: 3
 
   classification-service:
-    build: ./dispute-classification-service
+    image: eclipse-temurin:17-jre
+    volumes:
+      - ./dispute-classification-service/target/dispute-classification-service-1.0.0.jar:/app/app.jar
+    working_dir: /app
+    command: java -jar app.jar
     ports:
       - "8082:8080"
     environment:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     depends_on:
       - kafka
-      - common
       - intake-service
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
@@ -87,7 +86,11 @@ services:
       retries: 3
 
   workflow-service:
-    build: ./dispute-workflow-service
+    image: eclipse-temurin:17-jre
+    volumes:
+      - ./dispute-workflow-service/target/dispute-workflow-service-1.0.0.jar:/app/app.jar
+    working_dir: /app
+    command: java -jar app.jar
     ports:
       - "8083:8080"
     environment:
@@ -98,7 +101,6 @@ services:
     depends_on:
       - postgres
       - kafka
-      - common
       - classification-service
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
@@ -107,11 +109,20 @@ services:
       retries: 3
 
   agent-ui:
-    build: ./agent-ui-service
+    image: eclipse-temurin:17-jre
+    volumes:
+      - ./agent-ui-service/target/agent-ui-service-1.0.0.jar:/app/app.jar
+    working_dir: /app
+    command: java -jar app.jar
     ports:
       - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/disputes
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: smartcase
     depends_on:
-      - common
+      - postgres
+      - workflow-service
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/dashboard"]
       interval: 30s
@@ -119,5 +130,4 @@ services:
       retries: 3
 
 volumes:
-  pgdata:
-  maven-repo: 
+  pgdata: 

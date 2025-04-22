@@ -8,8 +8,10 @@
     <artifactId>smartcase-engine</artifactId>
     <version>1.0.0</version>
     <packaging>pom</packaging>
-    <name>Smartcase Dispute Engine</name>
-
+    
+    <name>SmartCase Dispute Management System</name>
+    <description>A microservices-based system for managing dispute cases</description>
+    
     <modules>
         <module>dispute-common</module>
         <module>dispute-intake-service</module>
@@ -17,12 +19,17 @@
         <module>dispute-workflow-service</module>
         <module>agent-ui-service</module>
     </modules>
-
+    
     <properties>
         <java.version>17</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
         <spring-boot.version>3.1.0</spring-boot.version>
+        <kafka.version>3.4.0</kafka.version>
+        <postgresql.version>42.5.4</postgresql.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-
+    
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -34,4 +41,16 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+    
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring-boot.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 </project> 

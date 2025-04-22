@@ -40,6 +40,11 @@
             <artifactId>spring-kafka</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
             <groupId>org.kie</groupId>
             <artifactId>kie-spring</artifactId>
             <version>7.73.0.Final</version>
