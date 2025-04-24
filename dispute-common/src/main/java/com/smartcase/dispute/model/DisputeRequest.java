@@ -11,6 +11,7 @@ public class DisputeRequest implements Serializable {
     private String customerId;
     private String transactionReference;
     private BigDecimal amount;
+    private String transactionId;
     private String reason;
     
     // Default constructor for serialization
