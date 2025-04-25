@@ -16,7 +16,9 @@ public class ManualTask {
     private BigDecimal amount;
     private int priority;
     private String category;
+    
     private String status;
+    
     private String assignee;
     
     @Column(name = "created_at")

@@ -27,7 +27,7 @@ public class ClassificationService {
         logger.info("ClassificationService initialized and ready to process disputes");
     }
 
-    @KafkaListener(topics = "dispute.intake", groupId = "dispute-classification", containerFactory = "kafkaListenerContainerFactory")
+    @KafkaListener(topics = "dispute.intake", groupId = "dispute-classification-processor", containerFactory = "kafkaListenerContainerFactory")
     public void classifyDispute(DisputeRequest disputeRequest) {
         // Log the incoming dispute request details
         logger.info("Received dispute request: customerId={}, transactionId={}, amount={}, reason={}",

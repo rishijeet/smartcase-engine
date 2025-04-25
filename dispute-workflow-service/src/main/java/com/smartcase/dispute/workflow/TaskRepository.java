@@ -19,4 +19,6 @@ public interface TaskRepository extends JpaRepository<ManualTask, String> {
     List<ManualTask> findByCategory(String category);
     
     List<ManualTask> findByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
+    
+    List<ManualTask> findByPriorityBetween(int minPriority, int maxPriority);
 }
