@@ -8,11 +8,14 @@ import java.time.LocalDateTime;
 import com.smartcase.dispute.model.ClassifiedDispute;
 import com.smartcase.dispute.model.ManualTask;
 import com.smartcase.dispute.model.TaskRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class WorkflowService {
 
     private final TaskRepository taskRepository;
+    private static final Logger logger = LoggerFactory.getLogger(WorkflowService.class);
 
     @Autowired
     public WorkflowService(TaskRepository taskRepository) {
@@ -21,17 +24,15 @@ public class WorkflowService {
 
     @KafkaListener(topics = "dispute.classified", groupId = "dispute-workflow")
     public void processClassifiedDispute(ClassifiedDispute classifiedDispute) {
-        // For high priority or fraud disputes, create a manual review task
-        if (classifiedDispute.getPriority() == 1 || "FRAUD".equals(classifiedDispute.getCategory())) {
-            createManualTask(classifiedDispute);
-        } else {
-            // For standard cases, implement automated handling
-            // In a real system, this would integrate with payment systems, etc.
-            System.out.println("Auto-processing dispute: " + classifiedDispute.getDisputeRequest().getTransactionReference());
-        }
+        createTask(classifiedDispute);
+        
+        logger.info("Processed dispute {} (Category: {}, Priority: {})", 
+            classifiedDispute.getDisputeRequest().getTransactionReference(),
+            classifiedDispute.getCategory(),
+            classifiedDispute.getPriority());
     }
 
-    private void createManualTask(ClassifiedDispute classifiedDispute) {
+    private void createTask(ClassifiedDispute classifiedDispute) {
         ManualTask task = new ManualTask();
         task.setId(UUID.randomUUID().toString());
         task.setDisputeReference(classifiedDispute.getDisputeRequest().getTransactionReference());
@@ -43,8 +44,5 @@ public class WorkflowService {
         task.setCreatedAt(LocalDateTime.now());
         
         taskRepository.save(task);
-        
-        System.out.println("Created manual task: " + task.getId() + " for dispute: " + 
-                           classifiedDispute.getDisputeRequest().getTransactionReference());
     }
 } 
